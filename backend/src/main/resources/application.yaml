@@ -1,0 +1,44 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/liftlens_db}
+    username: ${SPRING_DATASOURCE_USERNAME:liftlens}
+    password: ${SPRING_DATASOURCE_PASSWORD:liftlenspassword123}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 10
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+server:
+  port: 8080
+  tomcat:
+    max-swallow-size: -1
+    max-http-form-post-size: -1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+
+app:
+  ml-service-url: ${ML_SERVICE_URL:http://localhost:8000}
+  video-storage-path: /app/videos
+  skeleton-video-storage-path: /app/skeleton_videos
