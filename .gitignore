@@ -1,0 +1,59 @@
+# ===== Environment / Secrets =====
+.env
+*.env.local
+
+# ===== Java / Maven =====
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+.venv/
+venv/
+*.egg
+
+# ===== Next.js =====
+node_modules/
+.next/
+out/
+.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+*.pem
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# ===== IDE =====
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# ===== Project-specific =====
+ml/data/
+videos/
+skeleton_videos/
