@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.router import router
+
 app = FastAPI(
     title="LiftLens ML Service",
     description="Exercise form analysis using MediaPipe pose estimation",
@@ -13,6 +15,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(router)
 
 
 @app.get("/health")
