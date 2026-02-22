@@ -61,6 +61,7 @@ public class AnalysisService {
                 .muscleGroup(muscleGroup)
                 .overallScore(OverallScore.valueOf(mlResult.getOverallScore()))
                 .videoPath(storedPath.toString())
+                .skeletonVideoPath(mlResult.getSkeletonVideoPath())
                 .build();
 
         List<FeedbackItem> items = mlResult.getFeedback().stream()

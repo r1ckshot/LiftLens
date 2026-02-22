@@ -17,4 +17,7 @@ public class MlAnalysisResponse {
     private String overallScore;
 
     private List<MlFeedbackItem> feedback;
+
+    @JsonProperty("skeleton_video_path")
+    private String skeletonVideoPath;
 }
