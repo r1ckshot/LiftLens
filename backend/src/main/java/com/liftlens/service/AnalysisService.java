@@ -92,6 +92,13 @@ public class AnalysisService {
                 .orElseThrow(() -> new RuntimeException("Analysis not found: " + id));
     }
 
+    @Transactional(readOnly = true)
+    public String getSkeletonVideoPath(Long id) {
+        return analysisRepository.findById(id)
+                .map(Analysis::getSkeletonVideoPath)
+                .orElseThrow(() -> new RuntimeException("Analysis not found: " + id));
+    }
+
     private AnalysisResponse toResponse(Analysis a) {
         List<FeedbackItemResponse> feedback = a.getFeedbackItems() == null
                 ? List.of()
