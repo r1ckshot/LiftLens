@@ -12,26 +12,53 @@ DEPTH_WARN = 110.0
 BACK_GOOD = 35.0
 BACK_WARN = 50.0
 
+# Bottom-phase detection bounds.
+# Frames with knee angle < 45° are MediaPipe artifacts (physically impossible).
+# Frames with knee angle > 100° are standing or early-descent, not the bottom.
+_BOTTOM_KNEE_MIN = 45.0
+_BOTTOM_KNEE_MAX = 100.0
+
+
+def _avg_knee(f: FrameFeatures) -> Optional[float]:
+    if f.knee_angle_left is not None and f.knee_angle_right is not None:
+        return (f.knee_angle_left + f.knee_angle_right) / 2
+    return f.knee_angle_left if f.knee_angle_left is not None else f.knee_angle_right
+
 
 def _min_knee_angle(frames: list[FrameFeatures]) -> Optional[float]:
-    """Returns the minimum average knee angle across all frames (deepest point)."""
-    angles = []
-    for f in frames:
-        left = f.knee_angle_left
-        right = f.knee_angle_right
-        if left is not None and right is not None:
-            angles.append((left + right) / 2)
-        elif left is not None:
-            angles.append(left)
-        elif right is not None:
-            angles.append(right)
+    """Returns the minimum average knee angle, excluding artifact frames (< 45°)."""
+    angles = [k for f in frames if (k := _avg_knee(f)) is not None and k >= _BOTTOM_KNEE_MIN]
     return min(angles) if angles else None
 
 
-def _median_back_angle(frames: list[FrameFeatures]) -> Optional[float]:
-    """Returns the median back angle across all frames."""
-    angles = [f.back_angle for f in frames if f.back_angle is not None]
-    return statistics.median(angles) if angles else None
+def _bottom_phase_back_angle(frames: list[FrameFeatures]) -> Optional[float]:
+    """
+    Returns the median back angle during the bottom phase of the squat.
+
+    Bottom phase is defined as frames where the average knee angle is in
+    [45°, 100°]. The lower bound excludes MediaPipe artifact frames that
+    appear at extreme squat positions (physically impossible angles < 45°).
+    The upper bound excludes standing and early-descent frames (> 100°).
+
+    Falls back to the 90th-percentile across all frames if no bottom frames exist
+    (e.g. person only squatted to 110°, or knees not visible throughout).
+    """
+    knee_vals = [_avg_knee(f) for f in frames]
+    bottom_back = [
+        f.back_angle
+        for f, k in zip(frames, knee_vals)
+        if k is not None and _BOTTOM_KNEE_MIN <= k <= _BOTTOM_KNEE_MAX
+        and f.back_angle is not None
+    ]
+
+    if bottom_back:
+        return statistics.median(bottom_back)
+
+    # Fallback: squat didn't reach 100° or knees always off-screen
+    all_back = sorted(f.back_angle for f in frames if f.back_angle is not None)
+    if not all_back:
+        return None
+    return all_back[int(len(all_back) * 0.90)]
 
 
 def _depth_feedback(min_knee: Optional[float]) -> FeedbackItem:
@@ -50,19 +77,19 @@ def _depth_feedback(min_knee: Optional[float]) -> FeedbackItem:
     )
 
 
-def _back_feedback(median_back: Optional[float]) -> FeedbackItem:
-    if median_back is None:
+def _back_feedback(bottom_back: Optional[float]) -> FeedbackItem:
+    if bottom_back is None:
         return FeedbackItem("back_position", "error", "Could not measure back angle — shoulders/hips not visible.")
-    if median_back <= BACK_GOOD:
+    if bottom_back <= BACK_GOOD:
         return FeedbackItem("back_position", "ok", "Good back position.")
-    if median_back <= BACK_WARN:
+    if bottom_back <= BACK_WARN:
         return FeedbackItem(
             "back_position", "warning",
-            f"Slight forward lean ({median_back:.0f}°). Keep your chest up.",
+            f"Slight forward lean ({bottom_back:.0f}°). Keep your chest up.",
         )
     return FeedbackItem(
         "back_position", "error",
-        f"Excessive forward lean ({median_back:.0f}°). Engage your core and keep torso upright.",
+        f"Excessive forward lean ({bottom_back:.0f}°). Engage your core and keep torso upright.",
     )
 
 
@@ -88,11 +115,11 @@ class SquatClassifier(BaseClassifier):
             )
 
         min_knee = _min_knee_angle(frames)
-        median_back = _median_back_angle(frames)
+        bottom_back = _bottom_phase_back_angle(frames)
 
         feedback = [
             _depth_feedback(min_knee),
-            _back_feedback(median_back),
+            _back_feedback(bottom_back),
         ]
 
         return ClassificationResult(

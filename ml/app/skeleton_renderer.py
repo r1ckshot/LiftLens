@@ -1,3 +1,6 @@
+import os
+import subprocess
+
 import cv2
 import mediapipe as mp
 from typing import Optional
@@ -13,7 +16,7 @@ _VISIBILITY_THRESHOLD = 0.5
 
 
 class SkeletonRenderer:
-    """Renders MediaPipe pose landmarks onto a video using OpenCV."""
+    """Renders MediaPipe pose landmarks onto a video and re-encodes to H.264."""
 
     def render(
         self,
@@ -21,13 +24,15 @@ class SkeletonRenderer:
         landmarks_seq: list[Optional[list[Landmark]]],
         output_path: str,
     ) -> None:
+        tmp_path = output_path + ".tmp.mp4"
+
         cap = cv2.VideoCapture(video_path)
         fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
         w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
         out = cv2.VideoWriter(
-            output_path,
+            tmp_path,
             cv2.VideoWriter_fourcc(*"mp4v"),
             fps,
             (w, h),
@@ -44,6 +49,23 @@ class SkeletonRenderer:
         finally:
             cap.release()
             out.release()
+
+        # Re-encode to H.264 — required for browser HTML5 video playback.
+        # mp4v (MPEG-4 Part 2) is not supported in Chrome/Firefox.
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-i", tmp_path,
+                "-c:v", "libx264",
+                "-pix_fmt", "yuv420p",   # widest browser compatibility
+                "-movflags", "+faststart",  # moov atom first — enables streaming
+                "-y",
+                output_path,
+            ],
+            check=True,
+            capture_output=True,
+        )
+        os.unlink(tmp_path)
 
     def _draw(self, frame, landmarks: list[Landmark], w: int, h: int) -> None:
         for a, b in _CONNECTIONS:
