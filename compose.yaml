@@ -51,8 +51,10 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      - ./ml:/app                                    # hot reload — source code
       - liftlens_videos:/app/videos:ro
       - liftlens_skeleton_videos:/app/skeleton_videos
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
       interval: 10s
@@ -65,19 +67,25 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: dev                                    # hot reload — Next.js HMR
     ports:
       - "3000:3000"
+    volumes:
+      - ./frontend:/app                              # hot reload — source code
+      - /app/node_modules                            # keep container's node_modules
+      - /app/.next                                   # keep Next.js build cache
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8080
+      WATCHPACK_POLLING: "true"                      # required for file watching on Windows
     depends_on:
       backend:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
-      interval: 10s
+      interval: 15s
       timeout: 5s
-      retries: 5
-      start_period: 30s
+      retries: 8
+      start_period: 60s                              # dev server needs more time on first compile
     restart: unless-stopped
 
 volumes:

@@ -1,18 +1,24 @@
-# Stage 1: Dependencies
+# Stage 1: Install dependencies
 FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat curl
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 
-# Stage 2: Build
+# Stage 2: Development server (hot reload)
+FROM deps AS dev
+ENV NEXT_TELEMETRY_DISABLED=1
+EXPOSE 3000
+CMD ["npm", "run", "dev"]
+
+# Stage 3: Build
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-# Stage 3: Production runtime
+# Stage 4: Production runtime
 FROM node:20-alpine AS runner
 WORKDIR /app
 
