@@ -33,6 +33,7 @@ public class AnalysisService {
             Map.entry("lateral_raise", "shoulders"),
             Map.entry("arnold_press", "shoulders"),
             Map.entry("squat", "legs"),
+            Map.entry("lunge", "legs"),
             Map.entry("bulgarian_split_squat", "legs"),
             Map.entry("romanian_deadlift", "legs"),
             Map.entry("pull_up", "back"),
