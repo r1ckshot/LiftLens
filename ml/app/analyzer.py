@@ -5,10 +5,12 @@ from app.pose_estimator import PoseEstimator
 from app.feature_extractor import FeatureExtractor
 from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem
 from app.classifiers.squat import SquatClassifier
+from app.classifiers.push_up import PushUpClassifier
 from app.skeleton_renderer import SkeletonRenderer
 
 _CLASSIFIERS: dict[str, BaseClassifier] = {
     "squat": SquatClassifier(),
+    "push_up": PushUpClassifier(),
 }
 
 
