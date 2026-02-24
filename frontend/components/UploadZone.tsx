@@ -22,9 +22,9 @@ const EXERCISES_BY_GROUP: Record<
     { id: "romanian_deadlift", label: "Romanian Deadlift", supported: false },
   ],
   chest: [
+    { id: "push_up", label: "Push Up", supported: true },
     { id: "bench_press", label: "Bench Press", supported: false },
     { id: "incline_bench_press", label: "Incline Bench Press", supported: false },
-    { id: "push_up", label: "Push Up", supported: false },
   ],
   shoulders: [
     { id: "overhead_press", label: "Overhead Press", supported: false },
