@@ -18,6 +18,7 @@ const EXERCISES_BY_GROUP: Record<
 > = {
   legs: [
     { id: "squat", label: "Squat", supported: true },
+    { id: "lunge", label: "Lunge", supported: true },
     { id: "bulgarian_split_squat", label: "Bulgarian Split Squat", supported: false },
     { id: "romanian_deadlift", label: "Romanian Deadlift", supported: false },
   ],
