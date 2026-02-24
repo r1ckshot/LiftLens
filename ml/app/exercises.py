@@ -9,7 +9,7 @@ MUSCLE_GROUPS = {
     },
     "legs": {
         "name": "Legs",
-        "exercises": ["squat", "bulgarian_split_squat", "romanian_deadlift"],
+        "exercises": ["squat", "lunge", "bulgarian_split_squat", "romanian_deadlift"],
     },
     "back": {
         "name": "Back",
@@ -52,6 +52,11 @@ EXERCISES = {
         "name": "Squat",
         "muscle_group": "legs",
         "aspects": ["Knee alignment", "Depth", "Back angle", "Hip hinge"],
+    },
+    "lunge": {
+        "name": "Lunge",
+        "muscle_group": "legs",
+        "aspects": ["Front knee depth", "Torso position", "Back knee", "Stride"],
     },
     "bulgarian_split_squat": {
         "name": "Bulgarian Split Squat",
