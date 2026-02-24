@@ -8,9 +8,11 @@ from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackI
 DEPTH_GOOD = 90.0
 DEPTH_WARN = 110.0
 
-# Back angle thresholds (spine vs vertical; lower = more upright)
-BACK_GOOD = 35.0
-BACK_WARN = 50.0
+# Back angle thresholds (spine vs vertical; lower = more upright).
+# Research: low-bar squat at parallel = ~40° lean, high-bar = ~25-45°.
+# 50° accommodates both styles; >65° is excessive for any squat technique.
+BACK_GOOD = 50.0
+BACK_WARN = 65.0
 
 # Bottom-phase detection bounds.
 # Frames with knee angle < 45° are MediaPipe artifacts (physically impossible).
