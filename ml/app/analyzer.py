@@ -6,6 +6,7 @@ from app.feature_extractor import FeatureExtractor
 from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem
 from app.classifiers.squat import SquatClassifier
 from app.classifiers.push_up import PushUpClassifier
+from app.camera_validator import check_side_view
 from app.skeleton_renderer import SkeletonRenderer
 
 _CLASSIFIERS: dict[str, BaseClassifier] = {
@@ -48,6 +49,17 @@ class Analyzer:
             )
 
         landmarks_seq = self._pose.process_video(video_path)
+
+        camera_error = check_side_view(landmarks_seq)
+        if camera_error:
+            return AnalysisResult(
+                classification=ClassificationResult(
+                    overall_score="poor",
+                    feedback=[FeedbackItem("camera_angle", "error", camera_error)],
+                ),
+                skeleton_video_path=None,
+            )
+
         features_seq = self._extractor.extract_sequence(landmarks_seq)
         classification = classifier.predict(features_seq)
 
