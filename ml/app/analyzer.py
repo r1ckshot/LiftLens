@@ -8,14 +8,17 @@ from app.classifiers.squat import SquatClassifier
 from app.classifiers.push_up import PushUpClassifier
 from app.classifiers.lunge import LungeClassifier
 from app.classifiers.pull_up import PullUpClassifier
-from app.camera_validator import check_side_view
+from app.classifiers.overhead_press import OverheadPressClassifier
+from app.camera_validator import check_side_view, check_front_view
 from app.skeleton_renderer import SkeletonRenderer
+from app.exercises import EXERCISES
 
 _CLASSIFIERS: dict[str, BaseClassifier] = {
     "squat": SquatClassifier(),
     "push_up": PushUpClassifier(),
     "lunge": LungeClassifier(),
     "pull_up": PullUpClassifier(),
+    "overhead_press": OverheadPressClassifier(),
 }
 
 
@@ -54,7 +57,16 @@ class Analyzer:
 
         landmarks_seq = self._pose.process_video(video_path)
 
-        camera_error = check_side_view(landmarks_seq)
+        camera_view = EXERCISES.get(exercise_id, {}).get("camera_view", "side")
+        if camera_view == "front":
+            camera_error = check_front_view(landmarks_seq)
+        elif camera_view == "any":
+            side_err = check_side_view(landmarks_seq)
+            front_err = check_front_view(landmarks_seq)
+            camera_error = None if (side_err is None or front_err is None) else front_err
+        else:  # "side" (default)
+            camera_error = check_side_view(landmarks_seq)
+
         if camera_error:
             return AnalysisResult(
                 classification=ClassificationResult(
