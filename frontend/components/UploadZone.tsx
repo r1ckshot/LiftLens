@@ -33,7 +33,7 @@ const EXERCISES_BY_GROUP: Record<
     { id: "arnold_press", label: "Arnold Press", supported: false },
   ],
   back: [
-    { id: "pull_up", label: "Pull Up", supported: false },
+    { id: "pull_up", label: "Pull Up", supported: true },
     { id: "barbell_row", label: "Barbell Row", supported: false },
     { id: "deadlift", label: "Deadlift", supported: false },
   ],
