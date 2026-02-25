@@ -7,6 +7,7 @@ from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackI
 from app.classifiers.squat import SquatClassifier
 from app.classifiers.push_up import PushUpClassifier
 from app.classifiers.lunge import LungeClassifier
+from app.classifiers.pull_up import PullUpClassifier
 from app.camera_validator import check_side_view
 from app.skeleton_renderer import SkeletonRenderer
 
@@ -14,6 +15,7 @@ _CLASSIFIERS: dict[str, BaseClassifier] = {
     "squat": SquatClassifier(),
     "push_up": PushUpClassifier(),
     "lunge": LungeClassifier(),
+    "pull_up": PullUpClassifier(),
 }
 
 
