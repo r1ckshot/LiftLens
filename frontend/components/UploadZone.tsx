@@ -19,7 +19,6 @@ const EXERCISES_BY_GROUP: Record<
   legs: [
     { id: "squat", label: "Squat", supported: true },
     { id: "lunge", label: "Lunge", supported: true },
-    { id: "bulgarian_split_squat", label: "Bulgarian Split Squat", supported: false },
     { id: "romanian_deadlift", label: "Romanian Deadlift", supported: false },
   ],
   chest: [
@@ -28,7 +27,7 @@ const EXERCISES_BY_GROUP: Record<
     { id: "incline_bench_press", label: "Incline Bench Press", supported: false },
   ],
   shoulders: [
-    { id: "overhead_press", label: "Overhead Press", supported: false },
+    { id: "overhead_press", label: "Overhead Press", supported: true },
     { id: "lateral_raise", label: "Lateral Raise", supported: false },
     { id: "arnold_press", label: "Arnold Press", supported: false },
   ],
