@@ -39,15 +39,15 @@ def _depth_feedback(min_elbow: Optional[float]) -> FeedbackItem:
     if min_elbow is None:
         return FeedbackItem("range_of_motion", "error", "Could not measure elbow angle — arms not visible.")
     if min_elbow <= DEPTH_GOOD:
-        return FeedbackItem("range_of_motion", "ok", "Good range of motion — chin above the bar.")
+        return FeedbackItem("range_of_motion", "ok", "Good range of motion — full height achieved.")
     if min_elbow <= DEPTH_WARN:
         return FeedbackItem(
             "range_of_motion", "warning",
-            f"Partial rep ({min_elbow:.0f}°). Pull higher until your chin clears the bar.",
+            f"Partial rep ({min_elbow:.0f}°). Pull higher until your chin clears the overhead grip.",
         )
     return FeedbackItem(
         "range_of_motion", "error",
-        f"Insufficient height ({min_elbow:.0f}°). Pull yourself higher — chin must clear the bar.",
+        f"Insufficient height ({min_elbow:.0f}°). Pull yourself much higher — chin must clear the grip point.",
     )
 
 
@@ -55,7 +55,7 @@ def _extension_feedback(max_elbow: Optional[float]) -> FeedbackItem:
     if max_elbow is None:
         return FeedbackItem("full_extension", "error", "Could not measure arm extension — arms not visible.")
     if max_elbow >= EXTENSION_GOOD:
-        return FeedbackItem("full_extension", "ok", "Good full extension at the bottom.")
+        return FeedbackItem("full_extension", "ok", "Good dead hang — arms fully extended between reps.")
     if max_elbow >= EXTENSION_WARN:
         return FeedbackItem(
             "full_extension", "warning",
