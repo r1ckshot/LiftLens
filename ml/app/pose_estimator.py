@@ -10,6 +10,9 @@ class Landmark:
     y: float
     z: float
     visibility: float
+    wx: float = 0.0  # world x, metres, person's right = positive
+    wy: float = 0.0  # world y, metres, up = positive
+    wz: float = 0.0  # world z, metres, toward camera = positive
 
 
 class LandmarkIndex:
@@ -71,9 +74,11 @@ class PoseEstimator:
                 pose_result = self._pose.process(frame_rgb)
 
                 if pose_result.pose_landmarks:
+                    world_lms = pose_result.pose_world_landmarks.landmark
                     results.append([
-                        Landmark(lm.x, lm.y, lm.z, lm.visibility)
-                        for lm in pose_result.pose_landmarks.landmark
+                        Landmark(lm.x, lm.y, lm.z, lm.visibility,
+                                 wx=wlm.x, wy=wlm.y, wz=wlm.z)
+                        for lm, wlm in zip(pose_result.pose_landmarks.landmark, world_lms)
                     ])
                 else:
                     results.append(None)

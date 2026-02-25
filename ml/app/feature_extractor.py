@@ -1,3 +1,4 @@
+import math
 import numpy as np
 from dataclasses import dataclass
 from typing import Optional
@@ -21,9 +22,45 @@ class FrameFeatures:
     shoulder_angle_right: Optional[float]
     # Back angle: angle of spine (shoulder→hip) relative to vertical axis
     back_angle: Optional[float]
+    # 3D world-space features (None when world landmarks unavailable)
+    elbow_flare_angle_3d: Optional[float] = None  # OHP: 0°=forward, 90°=fully flared
+    back_lean_3d: Optional[float] = None           # OHP: 0°=vertical, >15°=lean
 
 
 VISIBILITY_THRESHOLD = 0.5  # ignore landmarks below this confidence
+
+
+def _elbow_flare_3d(shoulder: Landmark, elbow: Landmark) -> Optional[float]:
+    """
+    Angle (degrees) of the elbow relative to the shoulder in the frontal plane,
+    measured using 3D world coordinates.
+    0° = elbow directly in front of shoulder (good OHP), 90° = fully to the side (flare).
+    Returns None if visibility is insufficient or the landmarks have no 3D data.
+    """
+    if min(shoulder.visibility, elbow.visibility) < VISIBILITY_THRESHOLD:
+        return None
+    lateral = abs(elbow.wx - shoulder.wx)
+    forward = abs(elbow.wz - shoulder.wz)
+    if lateral == 0 and forward == 0:
+        return None
+    return float(math.degrees(math.atan2(lateral, forward)))
+
+
+def _back_lean_3d(shoulder: Landmark, hip: Landmark) -> Optional[float]:
+    """
+    Angle (degrees) between the spine vector (shoulder→hip in world space) and
+    the vertical axis.  0° = perfectly upright, >15° = significant lean.
+    """
+    if min(shoulder.visibility, hip.visibility) < VISIBILITY_THRESHOLD:
+        return None
+    dy = hip.wy - shoulder.wy  # negative = hip below shoulder (normal)
+    dz = hip.wz - shoulder.wz
+    norm = math.sqrt(dy * dy + dz * dz)
+    if norm == 0:
+        return None
+    # angle from vertical in the wy/wz plane (MediaPipe world coords: y-axis points down)
+    cosine = max(-1.0, min(1.0, dy / norm))
+    return float(math.degrees(math.acos(cosine)))
 
 
 def _angle(a: Landmark, b: Landmark, c: Landmark) -> Optional[float]:
@@ -92,7 +129,7 @@ class FeatureExtractor:
         lan = landmarks[L.LEFT_ANKLE]
         ran = landmarks[L.RIGHT_ANKLE]
 
-        # Average left/right shoulder and hip for a center-spine back angle
+        # Average left/right shoulder and hip for a center-spine back angle (2D)
         mid_shoulder = Landmark(
             x=(lsh.x + rsh.x) / 2, y=(lsh.y + rsh.y) / 2,
             z=0, visibility=min(lsh.visibility, rsh.visibility),
@@ -101,6 +138,26 @@ class FeatureExtractor:
             x=(lhi.x + rhi.x) / 2, y=(lhi.y + rhi.y) / 2,
             z=0, visibility=min(lhi.visibility, rhi.visibility),
         )
+
+        # Average left/right shoulder and hip using 3D world coordinates
+        mid_shoulder_w = Landmark(
+            x=0, y=0, z=0,
+            visibility=min(lsh.visibility, rsh.visibility),
+            wx=(lsh.wx + rsh.wx) / 2,
+            wy=(lsh.wy + rsh.wy) / 2,
+            wz=(lsh.wz + rsh.wz) / 2,
+        )
+        mid_hip_w = Landmark(
+            x=0, y=0, z=0,
+            visibility=min(lhi.visibility, rhi.visibility),
+            wx=(lhi.wx + rhi.wx) / 2,
+            wy=(lhi.wy + rhi.wy) / 2,
+            wz=(lhi.wz + rhi.wz) / 2,
+        )
+
+        # Average elbow flare from both sides (use whichever are visible)
+        flare_vals = [v for v in [_elbow_flare_3d(lsh, lel), _elbow_flare_3d(rsh, rel)] if v is not None]
+        elbow_flare = sum(flare_vals) / len(flare_vals) if flare_vals else None
 
         return FrameFeatures(
             knee_angle_left=_angle(lhi, lkn, lan),
@@ -112,6 +169,8 @@ class FeatureExtractor:
             shoulder_angle_left=_angle(lhi, lsh, lel),
             shoulder_angle_right=_angle(rhi, rsh, rel),
             back_angle=_back_angle(mid_shoulder, mid_hip),
+            elbow_flare_angle_3d=elbow_flare,
+            back_lean_3d=_back_lean_3d(mid_shoulder_w, mid_hip_w),
         )
 
     def extract_sequence(
