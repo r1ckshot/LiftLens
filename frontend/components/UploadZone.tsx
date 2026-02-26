@@ -28,7 +28,7 @@ const EXERCISES_BY_GROUP: Record<
   ],
   shoulders: [
     { id: "overhead_press", label: "Overhead Press", supported: true },
-    { id: "lateral_raise", label: "Lateral Raise", supported: false },
+    { id: "lateral_raise", label: "Lateral Raise", supported: true },
     { id: "arnold_press", label: "Arnold Press", supported: false },
   ],
   back: [
