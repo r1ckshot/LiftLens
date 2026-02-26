@@ -45,7 +45,7 @@ EXERCISES = {
     "lateral_raise": {
         "name": "Lateral Raise",
         "muscle_group": "shoulders",
-        "camera_view": "front",
+        "camera_view": "any",
         "aspects": ["Arm angle", "Shoulder height", "Body swing", "Elbow bend"],
     },
     "arnold_press": {

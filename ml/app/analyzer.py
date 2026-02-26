@@ -9,6 +9,7 @@ from app.classifiers.push_up import PushUpClassifier
 from app.classifiers.lunge import LungeClassifier
 from app.classifiers.pull_up import PullUpClassifier
 from app.classifiers.overhead_press import OverheadPressClassifier
+from app.classifiers.lateral_raise import LateralRaiseClassifier
 from app.camera_validator import check_side_view, check_front_view
 from app.skeleton_renderer import SkeletonRenderer
 from app.exercises import EXERCISES
@@ -19,6 +20,7 @@ _CLASSIFIERS: dict[str, BaseClassifier] = {
     "lunge": LungeClassifier(),
     "pull_up": PullUpClassifier(),
     "overhead_press": OverheadPressClassifier(),
+    "lateral_raise": LateralRaiseClassifier(),
 }
 
 

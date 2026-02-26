@@ -4,11 +4,13 @@ from typing import Optional
 from app.pose_estimator import Landmark, LandmarkIndex
 
 # Side-view: left and right shoulders overlap in x → spread ratio near 0.
-# Front-view: shoulders spread apart → ratio ~0.8–2.0.
-# Threshold 0.50 is permissive enough for real-world side views where MediaPipe
-# places shoulder landmarks slightly off-center due to body surface detection.
+# Front-view: shoulders spread apart → ratio ~0.5–2.0 (varies with framing).
+# Upper-body close shots (lateral raise) produce lower ratios (~0.35–0.60)
+# than full-body shots (overhead press, ~0.90–1.10).
+# Thresholds of 0.50/0.50 eliminate the dead zone in "any" mode:
+# any ratio < 0.50 passes as side, any ratio ≥ 0.50 passes as front.
 _MAX_SPREAD_RATIO = 0.50   # side view: ratio must be below this
-_MIN_FRONT_SPREAD_RATIO = 0.70  # front view: ratio must be above this
+_MIN_FRONT_SPREAD_RATIO = 0.50  # front view: ratio must be at or above this
 _VISIBILITY_THRESHOLD = 0.5
 _MIN_VALID_FRAMES = 10
 
