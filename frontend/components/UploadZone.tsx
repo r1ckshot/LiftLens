@@ -19,7 +19,7 @@ const EXERCISES_BY_GROUP: Record<
   legs: [
     { id: "squat", label: "Squat", supported: true },
     { id: "lunge", label: "Lunge", supported: true },
-    { id: "romanian_deadlift", label: "Romanian Deadlift", supported: false },
+    { id: "romanian_deadlift", label: "Romanian Deadlift", supported: true },
   ],
   chest: [
     { id: "push_up", label: "Push Up", supported: true },
