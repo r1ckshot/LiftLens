@@ -33,7 +33,7 @@ const EXERCISES_BY_GROUP: Record<
   ],
   back: [
     { id: "pull_up", label: "Pull Up", supported: true },
-    { id: "barbell_row", label: "Barbell Row", supported: false },
+    { id: "barbell_row", label: "Barbell Row", supported: true },
     { id: "deadlift", label: "Deadlift", supported: true },
   ],
 };
