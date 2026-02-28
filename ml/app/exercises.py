@@ -21,7 +21,7 @@ EXERCISES = {
     "bench_press": {
         "name": "Bench Press",
         "muscle_group": "chest",
-        "camera_view": "side",
+        "camera_view": "none",
         "aspects": ["Bar path", "Elbow angle", "Arch position", "Grip width"],
     },
     "incline_bench_press": {
