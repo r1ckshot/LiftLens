@@ -12,6 +12,7 @@ from app.classifiers.overhead_press import OverheadPressClassifier
 from app.classifiers.lateral_raise import LateralRaiseClassifier
 from app.classifiers.romanian_deadlift import RomanianDeadliftClassifier
 from app.classifiers.deadlift import DeadliftClassifier
+from app.classifiers.barbell_row import BarbellRowClassifier
 from app.camera_validator import check_side_view, check_front_view
 from app.skeleton_renderer import SkeletonRenderer
 from app.exercises import EXERCISES
@@ -25,6 +26,7 @@ _CLASSIFIERS: dict[str, BaseClassifier] = {
     "lateral_raise": LateralRaiseClassifier(),
     "romanian_deadlift": RomanianDeadliftClassifier(),
     "deadlift": DeadliftClassifier(),
+    "barbell_row": BarbellRowClassifier(),
 }
 
 
