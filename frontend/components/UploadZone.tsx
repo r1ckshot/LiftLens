@@ -23,8 +23,8 @@ const EXERCISES_BY_GROUP: Record<
   ],
   chest: [
     { id: "push_up", label: "Push Up", supported: true },
-    { id: "bench_press", label: "Bench Press", supported: false },
-    { id: "incline_bench_press", label: "Incline Bench Press", supported: false },
+    { id: "bench_press", label: "Bench Press", supported: true },
+    { id: "incline_bench_press", label: "Incline Bench Press", supported: true },
   ],
   shoulders: [
     { id: "overhead_press", label: "Overhead Press", supported: true },
