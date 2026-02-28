@@ -13,6 +13,8 @@ from app.classifiers.lateral_raise import LateralRaiseClassifier
 from app.classifiers.romanian_deadlift import RomanianDeadliftClassifier
 from app.classifiers.deadlift import DeadliftClassifier
 from app.classifiers.barbell_row import BarbellRowClassifier
+from app.classifiers.bench_press import BenchPressClassifier
+from app.classifiers.incline_bench_press import InclineBenchPressClassifier
 from app.camera_validator import check_side_view, check_front_view
 from app.skeleton_renderer import SkeletonRenderer
 from app.exercises import EXERCISES
@@ -27,6 +29,8 @@ _CLASSIFIERS: dict[str, BaseClassifier] = {
     "romanian_deadlift": RomanianDeadliftClassifier(),
     "deadlift": DeadliftClassifier(),
     "barbell_row": BarbellRowClassifier(),
+    "bench_press": BenchPressClassifier(),
+    "incline_bench_press": InclineBenchPressClassifier(),
 }
 
 
@@ -72,6 +76,8 @@ class Analyzer:
             side_err = check_side_view(landmarks_seq)
             front_err = check_front_view(landmarks_seq)
             camera_error = None if (side_err is None or front_err is None) else front_err
+        elif camera_view == "none":
+            camera_error = None  # exercise handles position validation internally
         else:  # "side" (default)
             camera_error = check_side_view(landmarks_seq)
 
