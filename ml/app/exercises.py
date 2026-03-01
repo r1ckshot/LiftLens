@@ -5,7 +5,7 @@ MUSCLE_GROUPS = {
     },
     "shoulders": {
         "name": "Shoulders",
-        "exercises": ["overhead_press", "lateral_raise", "arnold_press"],
+        "exercises": ["overhead_press", "lateral_raise", "upright_row", "arnold_press"],
     },
     "legs": {
         "name": "Legs",
@@ -47,6 +47,12 @@ EXERCISES = {
         "muscle_group": "shoulders",
         "camera_view": "any",
         "aspects": ["Arm angle", "Shoulder height", "Body swing", "Elbow bend"],
+    },
+    "upright_row": {
+        "name": "Upright Row",
+        "muscle_group": "shoulders",
+        "camera_view": "front",
+        "aspects": ["Pull height", "Elbow bend", "Body swing", "Bar path"],
     },
     "arnold_press": {
         "name": "Arnold Press",

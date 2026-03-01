@@ -13,6 +13,7 @@ from app.classifiers.lateral_raise import LateralRaiseClassifier
 from app.classifiers.romanian_deadlift import RomanianDeadliftClassifier
 from app.classifiers.deadlift import DeadliftClassifier
 from app.classifiers.barbell_row import BarbellRowClassifier
+from app.classifiers.upright_row import UprightRowClassifier
 from app.classifiers.bench_press import BenchPressClassifier
 from app.classifiers.incline_bench_press import InclineBenchPressClassifier
 from app.camera_validator import check_side_view, check_front_view
@@ -29,6 +30,7 @@ _CLASSIFIERS: dict[str, BaseClassifier] = {
     "romanian_deadlift": RomanianDeadliftClassifier(),
     "deadlift": DeadliftClassifier(),
     "barbell_row": BarbellRowClassifier(),
+    "upright_row": UprightRowClassifier(),
     "bench_press": BenchPressClassifier(),
     "incline_bench_press": InclineBenchPressClassifier(),
 }
