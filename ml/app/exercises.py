@@ -5,11 +5,11 @@ MUSCLE_GROUPS = {
     },
     "shoulders": {
         "name": "Shoulders",
-        "exercises": ["overhead_press", "lateral_raise", "upright_row", "arnold_press"],
+        "exercises": ["overhead_press", "lateral_raise", "upright_row"],
     },
     "legs": {
         "name": "Legs",
-        "exercises": ["squat", "lunge", "bulgarian_split_squat", "romanian_deadlift"],
+        "exercises": ["squat", "lunge", "romanian_deadlift"],
     },
     "back": {
         "name": "Back",
@@ -54,12 +54,6 @@ EXERCISES = {
         "camera_view": "front",
         "aspects": ["Pull height", "Elbow bend", "Body swing", "Bar path"],
     },
-    "arnold_press": {
-        "name": "Arnold Press",
-        "muscle_group": "shoulders",
-        "camera_view": "front",
-        "aspects": ["Rotation path", "Elbow position", "Lockout", "Posture"],
-    },
     "squat": {
         "name": "Squat",
         "muscle_group": "legs",
@@ -71,12 +65,6 @@ EXERCISES = {
         "muscle_group": "legs",
         "camera_view": "side",
         "aspects": ["Front knee depth", "Torso position", "Back knee", "Stride"],
-    },
-    "bulgarian_split_squat": {
-        "name": "Bulgarian Split Squat",
-        "muscle_group": "legs",
-        "camera_view": "side",
-        "aspects": ["Knee tracking", "Torso position", "Depth", "Balance"],
     },
     "romanian_deadlift": {
         "name": "Romanian Deadlift",

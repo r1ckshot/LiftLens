@@ -30,7 +30,6 @@ const EXERCISES_BY_GROUP: Record<
     { id: "overhead_press", label: "Overhead Press", supported: true },
     { id: "lateral_raise", label: "Lateral Raise", supported: true },
     { id: "upright_row", label: "Upright Row", supported: true },
-    { id: "arnold_press", label: "Arnold Press", supported: false },
   ],
   back: [
     { id: "pull_up", label: "Pull Up", supported: true },
