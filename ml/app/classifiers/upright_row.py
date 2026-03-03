@@ -2,24 +2,16 @@ import statistics
 from typing import Optional
 
 from app.feature_extractor import FrameFeatures
-from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem
+from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem, robust_min
 
-# Peak height thresholds (max shoulder_angle during pull; 0° = arm at side, 90° = elbow at shoulder).
-# BarBend / PureGym / Peloton: pull until elbows are at shoulder level (parallel to floor).
-# Do NOT raise elbows above shoulders — increases shoulder impingement risk.
-PEAK_GOOD_MIN = 70.0   # elbows near shoulder level — good pull height
-PEAK_GOOD_MAX = 120.0  # upper bound — above this risks shoulder impingement
-PEAK_WARN_MIN = 40.0   # below this = error (barely pulling at all)
+from app.thresholds import UPRIGHT_ROW_SHOULDER_GOOD as PEAK_GOOD_MIN, \
+    UPRIGHT_ROW_SHOULDER_WARN as PEAK_WARN_MIN, \
+    UPRIGHT_ROW_ELBOW_GOOD as ELBOW_GOOD, UPRIGHT_ROW_ELBOW_WARN as ELBOW_WARN
 
-# Elbow bend thresholds (min elbow_angle during pull; 180° = straight, 90° = right angle).
-# At the peak of a proper upright row, forearms hang down from the elbows → ~90° elbow angle.
-ELBOW_GOOD = 100.0   # arms well bent — bar pulled to chin/chest level
-ELBOW_WARN = 130.0   # insufficient bend — bar not travelling high enough
-
-# Body swing thresholds (max back_lean_3d during pull phase).
-# Research: "do not lean back — use a controlled pull, not momentum".
-SWING_GOOD = 15.0    # ≤ 15° = controlled
-SWING_WARN = 25.0    # > 25° = clearly using momentum
+# Upper bound and swing thresholds (classifier-internal)
+PEAK_GOOD_MAX = 120.0
+SWING_GOOD = 15.0
+SWING_WARN = 25.0
 
 # Pull phase: frames where the arms are clearly raised above the resting position.
 _PULL_ANGLE_MIN = 25.0
@@ -61,7 +53,7 @@ def _elbow_bend(frames: list[FrameFeatures]) -> Optional[float]:
     if not pull:
         return None
     vals = [e for f in pull if (e := _avg_elbow(f)) is not None and e >= 30.0]
-    return min(vals) if vals else None
+    return robust_min(vals)
 
 
 def _body_swing(frames: list[FrameFeatures]) -> Optional[float]:

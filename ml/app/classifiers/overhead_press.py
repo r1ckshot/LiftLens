@@ -2,7 +2,8 @@ import statistics
 from typing import Optional
 
 from app.feature_extractor import FrameFeatures
-from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem
+from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem, robust_max
+from app.thresholds import OHP_LOCKOUT_GOOD as LOCKOUT_GOOD, OHP_LOCKOUT_WARN as LOCKOUT_WARN
 
 # Elbow flare: angle between elbow and shoulder in world space.
 # 0° = elbows directly in front (good), 90° = fully flared to sides (bad).
@@ -15,10 +16,6 @@ FLARE_WARN = 75.0
 BACK_GOOD = 15.0
 BACK_WARN = 25.0
 
-# Lockout: shoulder angle at the top of the press.
-# Research: full lockout = arms nearly vertical, shoulder angle ~160-180°.
-LOCKOUT_GOOD = 160.0
-LOCKOUT_WARN = 145.0
 
 # Press-phase detection: frames where avg shoulder angle > 60° (arms are raised).
 _PRESS_SHOULDER_MIN = 60.0
@@ -53,7 +50,7 @@ def _press_phase_back_lean(frames: list[FrameFeatures]) -> Optional[float]:
 def _max_shoulder_angle(frames: list[FrameFeatures]) -> Optional[float]:
     """Maximum average shoulder angle across the video — the lockout position."""
     vals = [s for f in frames if (s := _avg_shoulder(f)) is not None]
-    return max(vals) if vals else None
+    return robust_max(vals)
 
 
 def _elbow_feedback(flare: Optional[float]) -> FeedbackItem:

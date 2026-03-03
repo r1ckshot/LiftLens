@@ -1,20 +1,10 @@
 from typing import Optional
 
 from app.feature_extractor import FrameFeatures
-from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem
+from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem, robust_min
 
-# Lockout: back_angle at the most upright point AFTER the bottom of the lift.
-# NSCA / Greg Nuckols (Stronger by Science): "complete hip and knee extension at the top."
-LOCKOUT_GOOD = 10.0   # fully upright — hips driven through
-LOCKOUT_WARN = 20.0   # slight forward lean — incomplete lockout
-
-# Stiff-leg detection: minimum knee angle during the hinge phase.
-# Unlike back_angle (which varies with limb proportions), knee angle at the
-# bottom clearly separates styles:
-#   Conventional: knees ~80–120° (significantly bent at the start)
-#   Stiff-leg / hips too high: knees > 145° (nearly straight throughout)
-# NSCA / Alan Thrall: "conventional deadlift requires deliberate knee bend at setup."
-STIFF_LEG_WARN = 145.0
+from app.thresholds import DEADLIFT_LOCKOUT_GOOD as LOCKOUT_GOOD, \
+    DEADLIFT_LOCKOUT_WARN as LOCKOUT_WARN, DEADLIFT_STIFF_LEG_WARN as STIFF_LEG_WARN
 
 # Hinge-phase detection: frames where the lifter is clearly leaning forward.
 _HINGE_BACK_MIN = 35.0
@@ -40,7 +30,7 @@ def _min_hinge_knee(frames: list[FrameFeatures]) -> Optional[float]:
     hinge = _hinge_phase_frames(frames)
     vals = [k for f in hinge
             if (k := _avg_knee(f)) is not None and k >= _MIN_PLAUSIBLE_KNEE]
-    return min(vals) if vals else None
+    return robust_min(vals)
 
 
 def _post_bottom_frames(frames: list[FrameFeatures]) -> list[FrameFeatures]:
@@ -61,7 +51,7 @@ def _lockout_back_angle(frames: list[FrameFeatures]) -> Optional[float]:
     """Minimum back angle after the bottom — the best lockout position achieved."""
     post = _post_bottom_frames(frames)
     vals = [f.back_angle for f in post if f.back_angle is not None]
-    return min(vals) if vals else None
+    return robust_min(vals)
 
 
 def _setup_feedback(min_knee: Optional[float]) -> FeedbackItem:

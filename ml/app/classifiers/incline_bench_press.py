@@ -2,7 +2,9 @@ import statistics
 from typing import Optional
 
 from app.feature_extractor import FrameFeatures
-from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem
+from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem, robust_min, robust_max
+from app.thresholds import (INCLINE_ELBOW_GOOD as DEPTH_GOOD, INCLINE_ELBOW_WARN as DEPTH_WARN,
+    INCLINE_LOCKOUT_GOOD as LOCKOUT_GOOD, INCLINE_LOCKOUT_WARN as LOCKOUT_WARN)
 
 # Body position thresholds (back_angle: 0° = upright, 90° = horizontal).
 # Incline at 30° from horizontal → back_angle ~60°.
@@ -11,14 +13,6 @@ from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackI
 IBP_POS_MIN = 35.0    # below = bench too steep (> 55° incline; more like OHP)
 IBP_POS_MAX = 70.0    # above = bench too flat (< 20° incline; looks like flat bench press)
 
-# Depth thresholds (min elbow angle at bottom of press; 90° = right angle).
-# NSCA / SetForSet: bar lowers to upper chest (just below clavicle); elbow ~90°.
-DEPTH_GOOD = 100.0   # bar at or near upper chest; full ROM
-DEPTH_WARN = 125.0   # partial ROM; bar not reaching chest
-
-# Lockout thresholds (max elbow angle at top of press).
-LOCKOUT_GOOD = 155.0  # near-full or full extension
-LOCKOUT_WARN = 135.0  # significant incomplete lockout
 
 _MIN_PLAUSIBLE_ELBOW = 30.0
 
@@ -38,13 +32,13 @@ def _body_position(frames: list[FrameFeatures]) -> Optional[float]:
 def _min_elbow(frames: list[FrameFeatures]) -> Optional[float]:
     """Minimum elbow angle — the deepest point of the press (bar at upper chest)."""
     vals = [e for f in frames if (e := _avg_elbow(f)) is not None and e >= _MIN_PLAUSIBLE_ELBOW]
-    return min(vals) if vals else None
+    return robust_min(vals)
 
 
 def _max_elbow(frames: list[FrameFeatures]) -> Optional[float]:
     """Maximum elbow angle — the lockout position at the top of the press."""
     vals = [e for f in frames if (e := _avg_elbow(f)) is not None and e >= _MIN_PLAUSIBLE_ELBOW]
-    return max(vals) if vals else None
+    return robust_max(vals)
 
 
 def _position_feedback(pos: Optional[float]) -> FeedbackItem:

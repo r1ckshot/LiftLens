@@ -2,18 +2,10 @@ import statistics
 from typing import Optional
 
 from app.feature_extractor import FrameFeatures
-from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem
+from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem, robust_min
 
-# Torso angle thresholds (back_angle: 0° = upright, 90° = horizontal).
-# BarBend / StrongLifts: torso should be roughly parallel to floor (45–90°).
-# ACE: "lean forward at a 45-degree angle" = 45° minimum.
-BACK_GOOD = 55.0    # properly hinged; lats loaded correctly
-BACK_WARN = 30.0    # too upright (Yates-row style); reduces lat engagement
-
-# Pull ROM thresholds (elbow angle at peak of pull; 180° = straight, 90° = right angle).
-# Research: elbow should reach ~90° at peak (bar to lower chest/belly).
-ROM_GOOD = 100.0    # full pull — elbows at or behind torso level
-ROM_WARN = 130.0    # partial pull — bar not reaching the body
+from app.thresholds import BARBELL_ROW_BACK_GOOD as BACK_GOOD, BARBELL_ROW_BACK_WARN as BACK_WARN, \
+    BARBELL_ROW_ROM_GOOD as ROM_GOOD, BARBELL_ROW_ROM_WARN as ROM_WARN
 
 # Exercise phase detection: frames where the lifter is clearly bent over.
 _ROW_BACK_MIN = 30.0
@@ -45,7 +37,7 @@ def _min_elbow_angle(frames: list[FrameFeatures]) -> Optional[float]:
     """Minimum elbow angle across all frames — the peak of the pull."""
     vals = [e for f in frames
             if (e := _avg_elbow(f)) is not None and e >= _MIN_PLAUSIBLE_ELBOW]
-    return min(vals) if vals else None
+    return robust_min(vals)
 
 
 def _torso_feedback(torso: Optional[float]) -> FeedbackItem:

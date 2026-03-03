@@ -2,17 +2,9 @@ import statistics
 from typing import Optional
 
 from app.feature_extractor import FrameFeatures
-from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem
-
-# Front knee angle at the bottom position (hip-knee-ankle; lower = deeper lunge).
-# Research: peak knee flexion ≈ 90° in a standard forward lunge (PMC4641539).
-DEPTH_GOOD = 90.0
-DEPTH_WARN = 110.0
-
-# Back angle thresholds (spine vs vertical; lower = more upright).
-# Upright torso is optimal for lunges; same reference range as squat.
-BACK_GOOD = 50.0
-BACK_WARN = 65.0
+from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem, robust_min
+from app.thresholds import LUNGE_KNEE_GOOD as DEPTH_GOOD, LUNGE_KNEE_WARN as DEPTH_WARN, \
+    LUNGE_BACK_GOOD as BACK_GOOD, LUNGE_BACK_WARN as BACK_WARN
 
 # Bottom-phase detection: the deeper of the two knee angles should be in this range.
 # < 45° = MediaPipe artifact; > 100° = standing / early descent.
@@ -42,7 +34,7 @@ def _deeper_knee(f: FrameFeatures) -> Optional[float]:
 def _min_depth_angle(frames: list[FrameFeatures]) -> Optional[float]:
     """Minimum front-knee angle across the video, excluding artifact frames (< 45°)."""
     angles = [k for f in frames if (k := _deeper_knee(f)) is not None and k >= _BOTTOM_KNEE_MIN]
-    return min(angles) if angles else None
+    return robust_min(angles)
 
 
 def _bottom_phase_back_angle(frames: list[FrameFeatures]) -> Optional[float]:

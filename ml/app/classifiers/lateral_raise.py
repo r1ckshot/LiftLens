@@ -2,23 +2,14 @@ import statistics
 from typing import Optional
 
 from app.feature_extractor import FrameFeatures
-from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem
+from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem, robust_max
 
-# Shoulder abduction angle at the peak of the raise (front view: hip→shoulder→elbow).
-# At proper height (arms parallel to floor): shoulder_angle ≈ 80-100°.
-# Research: arms should reach approximately shoulder height (90° abduction).
-HEIGHT_GOOD = 80.0  # at or above shoulder height
-HEIGHT_WARN = 60.0  # visibly below shoulder height
+from app.thresholds import LATERAL_HEIGHT_GOOD as HEIGHT_GOOD, LATERAL_HEIGHT_WARN as HEIGHT_WARN, \
+    LATERAL_ELBOW_WARN as ELBOW_BENT_WARN
 
-# Body swing: how much the torso leans back/forward during the raise (3D back lean).
-# 0° = perfectly upright. People lean back to use momentum when the weight is too heavy.
-# Research: <15° is acceptable natural stabilisation; >22° indicates momentum use.
+# Body swing thresholds (classifier-internal, 3D feature — not shared with renderer)
 SWING_GOOD = 15.0
 SWING_WARN = 22.0
-
-# Elbow angle during the raise.
-# Should be softly bent (≈ 150-170°). Overly bent = curling; too straight = strain risk.
-ELBOW_BENT_WARN = 135.0  # too much bend → turning into a lateral curl
 
 # Raise-phase detection: frames where at least one arm is raised.
 _RAISE_SHOULDER_MIN = 40.0
@@ -52,7 +43,7 @@ def _raise_phase_frames(frames: list[FrameFeatures]) -> list[FrameFeatures]:
 def _peak_shoulder_angle(frames: list[FrameFeatures]) -> Optional[float]:
     """Maximum average shoulder angle — the top of the raise."""
     vals = [s for f in frames if (s := _avg_shoulder(f)) is not None]
-    return max(vals) if vals else None
+    return robust_max(vals)
 
 
 def _body_swing(frames: list[FrameFeatures]) -> Optional[float]:

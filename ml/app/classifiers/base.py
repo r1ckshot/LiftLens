@@ -1,5 +1,22 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from typing import Optional
+
+
+def robust_min(vals: list[float], skip: int = 2) -> Optional[float]:
+    """min() that ignores the `skip` smallest values to filter isolated MediaPipe artifact frames."""
+    if not vals:
+        return None
+    s = sorted(vals)
+    return s[min(skip, len(s) - 1)]
+
+
+def robust_max(vals: list[float], skip: int = 2) -> Optional[float]:
+    """max() that ignores the `skip` largest values to filter isolated MediaPipe artifact frames."""
+    if not vals:
+        return None
+    s = sorted(vals, reverse=True)
+    return s[min(skip, len(s) - 1)]
 
 
 @dataclass

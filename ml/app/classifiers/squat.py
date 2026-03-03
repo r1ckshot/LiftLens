@@ -2,17 +2,9 @@ import statistics
 from typing import Optional
 
 from app.feature_extractor import FrameFeatures
-from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem
-
-# Knee angle thresholds (angle at joint B = hip-knee-ankle; lower = deeper squat)
-DEPTH_GOOD = 90.0
-DEPTH_WARN = 110.0
-
-# Back angle thresholds (spine vs vertical; lower = more upright).
-# Research: low-bar squat at parallel = ~40° lean, high-bar = ~25-45°.
-# 50° accommodates both styles; >65° is excessive for any squat technique.
-BACK_GOOD = 50.0
-BACK_WARN = 65.0
+from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem, robust_min
+from app.thresholds import SQUAT_KNEE_GOOD as DEPTH_GOOD, SQUAT_KNEE_WARN as DEPTH_WARN, \
+    SQUAT_BACK_GOOD as BACK_GOOD, SQUAT_BACK_WARN as BACK_WARN
 
 # Bottom-phase detection bounds.
 # Frames with knee angle < 45° are MediaPipe artifacts (physically impossible).
@@ -30,7 +22,7 @@ def _avg_knee(f: FrameFeatures) -> Optional[float]:
 def _min_knee_angle(frames: list[FrameFeatures]) -> Optional[float]:
     """Returns the minimum average knee angle, excluding artifact frames (< 45°)."""
     angles = [k for f in frames if (k := _avg_knee(f)) is not None and k >= _BOTTOM_KNEE_MIN]
-    return min(angles) if angles else None
+    return robust_min(angles)
 
 
 def _bottom_phase_back_angle(frames: list[FrameFeatures]) -> Optional[float]:

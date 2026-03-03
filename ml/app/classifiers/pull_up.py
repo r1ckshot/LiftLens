@@ -1,17 +1,10 @@
 from typing import Optional
 
 from app.feature_extractor import FrameFeatures
-from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem
+from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem, robust_min, robust_max
 
-# Elbow angle at the top of the pull-up (arms maximally bent).
-# Research: mean elbow flexion ROM at top = 93.4°; chin above bar ≈ 90°.
-DEPTH_GOOD = 90.0
-DEPTH_WARN = 120.0
-
-# Elbow angle at the bottom (dead hang, arms fully extended).
-# Arms should be nearly straight between reps.
-EXTENSION_GOOD = 160.0
-EXTENSION_WARN = 140.0
+from app.thresholds import PULLUP_DEPTH_GOOD as DEPTH_GOOD, PULLUP_DEPTH_WARN as DEPTH_WARN, \
+    PULLUP_EXTENSION_GOOD as EXTENSION_GOOD, PULLUP_EXTENSION_WARN as EXTENSION_WARN
 
 # Exclude MediaPipe artifact frames where elbow angle is physically impossible.
 _ELBOW_ARTIFACT_MIN = 45.0
@@ -26,13 +19,13 @@ def _avg_elbow(f: FrameFeatures) -> Optional[float]:
 def _min_elbow_angle(frames: list[FrameFeatures]) -> Optional[float]:
     """Minimum average elbow angle across the video — the top of the pull-up."""
     angles = [e for f in frames if (e := _avg_elbow(f)) is not None and e >= _ELBOW_ARTIFACT_MIN]
-    return min(angles) if angles else None
+    return robust_min(angles)
 
 
 def _max_elbow_angle(frames: list[FrameFeatures]) -> Optional[float]:
     """Maximum average elbow angle across the video — the dead hang bottom position."""
     angles = [e for f in frames if (e := _avg_elbow(f)) is not None]
-    return max(angles) if angles else None
+    return robust_max(angles)
 
 
 def _depth_feedback(min_elbow: Optional[float]) -> FeedbackItem:
