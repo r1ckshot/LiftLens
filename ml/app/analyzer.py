@@ -97,7 +97,11 @@ class Analyzer:
 
         skeleton_path = None
         if skeleton_output_path is not None:
-            self._renderer.render(video_path, landmarks_seq, skeleton_output_path)
+            self._renderer.render(
+                video_path, landmarks_seq, skeleton_output_path,
+                exercise_id=exercise_id,
+                features_seq=features_seq,
+            )
             skeleton_path = skeleton_output_path
 
         return AnalysisResult(classification=classification, skeleton_video_path=skeleton_path)

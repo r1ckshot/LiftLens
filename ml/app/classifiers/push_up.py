@@ -3,16 +3,8 @@ from typing import Optional
 
 from app.feature_extractor import FrameFeatures
 from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem
-
-# Body alignment thresholds: deviation from straight = |180° - hip_angle|.
-# 0° = perfect straight line heels-to-head (research: "straight line" standard).
-ALIGNMENT_GOOD = 15.0
-ALIGNMENT_WARN = 30.0
-
-# Depth thresholds: minimum average elbow angle across all frames.
-# Research: ~90° at full depth; 100° allows reasonable tolerance.
-DEPTH_GOOD = 100.0
-DEPTH_WARN = 115.0
+from app.thresholds import PUSHUP_ELBOW_GOOD as DEPTH_GOOD, PUSHUP_ELBOW_WARN as DEPTH_WARN, \
+    PUSHUP_ALIGNMENT_GOOD as ALIGNMENT_GOOD, PUSHUP_ALIGNMENT_WARN as ALIGNMENT_WARN
 
 # Push phase detection: frames where avg elbow_angle < 150° (arms actively bent).
 _PUSH_ELBOW_MAX = 150.0

@@ -4,18 +4,8 @@ from typing import Optional
 from app.feature_extractor import FrameFeatures
 from app.classifiers.base import BaseClassifier, ClassificationResult, FeedbackItem
 
-# Hip hinge depth: back_angle at the peak of the hinge.
-# back_angle: 0° = perfectly upright, 90° = torso parallel to floor.
-# NSCA/ACE: torso should reach ~45–90° for a complete ROM Romanian deadlift.
-DEPTH_GOOD = 45.0   # significant forward lean; hamstrings properly loaded
-DEPTH_WARN = 30.0   # insufficient hinge; hamstrings underloaded
-
-# Knee angle during the hinge phase (hip-knee-ankle; 180° = fully straight).
-# NSCA CSCS: "maintain slight knee flexion of ~15–30°" = knee_angle 150–165°.
-# Too straight (> 168°): locked knees → excessive hamstring attachment stress.
-# Too bent  (< 130°): squat pattern → moves load from hamstrings to quads.
-KNEE_STRAIGHT_WARN = 168.0
-KNEE_BENT_WARN = 130.0
+from app.thresholds import RDL_BACK_GOOD as DEPTH_GOOD, RDL_BACK_WARN as DEPTH_WARN, \
+    RDL_KNEE_STRAIGHT_WARN as KNEE_STRAIGHT_WARN, RDL_KNEE_BENT_WARN as KNEE_BENT_WARN
 
 # Hinge-phase detection: frames where the back has tilted forward enough
 # to be considered part of the movement (not the resting/standing position).
