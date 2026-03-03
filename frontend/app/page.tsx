@@ -6,6 +6,7 @@ import { UploadZone } from "@/components/UploadZone";
 import { ScoreBadge } from "@/components/ScoreBadge";
 import { FeedbackList } from "@/components/FeedbackList";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
+import { CameraErrorCard } from "@/components/CameraErrorCard";
 import { analyzeVideo, skeletonVideoUrl } from "@/lib/api";
 import type { Analysis } from "@/types/analysis";
 
@@ -97,7 +98,27 @@ export default function Home() {
           <div className="glass-card p-8 animate-fade-in max-w-md mx-auto">
             <LoadingOverlay progress={progress} />
           </div>
-        ) : result ? (
+        ) : result ? (() => {
+          const cameraError = result.feedbackItems.find(
+            (item) => item.aspect === "camera_angle"
+          );
+          if (cameraError) {
+            return (
+              <div className="animate-fade-in">
+                <CameraErrorCard message={cameraError.message} />
+                <div className="mt-4 flex justify-center">
+                  <button
+                    onClick={reset}
+                    className="py-3 px-6 rounded-xl text-white/40 border border-white/10 hover:border-green-500/30 hover:text-white/75 transition-all duration-250 text-sm flex items-center gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Try again
+                  </button>
+                </div>
+              </div>
+            );
+          }
+          return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Left column: Score + Feedback */}
             <div className="space-y-4">
@@ -160,7 +181,8 @@ export default function Home() {
               </AnimatedSection>
             </div>
           </div>
-        ) : (
+          );
+        })() : (
           <div className="glass-card p-6 animate-fade-in">
             <UploadZone onAnalyze={handleAnalyze} loading={loading} />
             {error && (
