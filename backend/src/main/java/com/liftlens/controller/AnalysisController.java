@@ -1,9 +1,11 @@
 package com.liftlens.controller;
 
 import com.liftlens.dto.AnalysisResponse;
+import com.liftlens.model.User;
 import com.liftlens.service.AnalysisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -24,19 +26,32 @@ public class AnalysisController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AnalysisResponse> create(
             @RequestParam("exercise_id") String exerciseId,
-            @RequestParam("video") MultipartFile video
+            @RequestParam("video") MultipartFile video,
+            @AuthenticationPrincipal User user
     ) throws IOException {
-        return ResponseEntity.ok(analysisService.create(video, exerciseId));
+        return ResponseEntity.ok(analysisService.create(video, exerciseId, user));
     }
 
     @GetMapping
-    public ResponseEntity<List<AnalysisResponse>> getAll() {
-        return ResponseEntity.ok(analysisService.getAll());
+    public ResponseEntity<List<AnalysisResponse>> getAll(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(analysisService.getByUser(user));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AnalysisResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(analysisService.getById(id));
+    public ResponseEntity<AnalysisResponse> getById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user
+    ) {
+        return ResponseEntity.ok(analysisService.getById(id, user));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user
+    ) {
+        analysisService.delete(id, user);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -46,9 +61,11 @@ public class AnalysisController {
     @GetMapping("/{id}/skeleton-video")
     public ResponseEntity<StreamingResponseBody> getSkeletonVideo(
             @RequestHeader HttpHeaders headers,
-            @PathVariable Long id) throws IOException {
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user
+    ) throws IOException {
 
-        String videoPath = analysisService.getSkeletonVideoPath(id);
+        String videoPath = analysisService.getSkeletonVideoPath(id, user);
         if (videoPath == null) return ResponseEntity.notFound().build();
 
         Path filePath = Path.of(videoPath);
@@ -86,7 +103,6 @@ public class AnalysisController {
                     remaining -= read;
                 }
             } catch (IOException e) {
-                // Suppress broken pipe — client closed the connection (normal for video seeking)
                 String msg = e.getMessage();
                 if (msg == null || (!msg.contains("Broken pipe") && !msg.contains("Connection reset"))) {
                     throw e;

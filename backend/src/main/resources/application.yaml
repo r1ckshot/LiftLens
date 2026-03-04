@@ -40,5 +40,7 @@ management:
 
 app:
   ml-service-url: ${ML_SERVICE_URL:http://localhost:8000}
-  video-storage-path: /app/videos
   skeleton-video-storage-path: /app/skeleton_videos
+  jwt:
+    secret: ${JWT_SECRET:liftlens-jwt-secret-key-minimum-32-bytes-long!!}
+    expiration: 604800000

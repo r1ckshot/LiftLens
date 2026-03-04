@@ -19,6 +19,10 @@ public class Analysis {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @Column(name = "exercise_id", nullable = false, length = 50)
     private String exerciseId;
 
@@ -28,9 +32,6 @@ public class Analysis {
     @Enumerated(EnumType.STRING)
     @Column(name = "overall_score", nullable = false)
     private OverallScore overallScore;
-
-    @Column(name = "video_path", length = 500)
-    private String videoPath;
 
     @Column(name = "skeleton_video_path", length = 500)
     private String skeletonVideoPath;

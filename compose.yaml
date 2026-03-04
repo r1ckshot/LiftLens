@@ -30,8 +30,8 @@ services:
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
       ML_SERVICE_URL: http://ml:8000
+      JWT_SECRET: ${JWT_SECRET:-liftlens-jwt-secret-key-minimum-32-bytes-long!!}
     volumes:
-      - liftlens_videos:/app/videos
       - liftlens_skeleton_videos:/app/skeleton_videos
     depends_on:
       db:
@@ -52,7 +52,6 @@ services:
       - "8000:8000"
     volumes:
       - ./ml:/app                                    # hot reload — source code
-      - liftlens_videos:/app/videos:ro
       - liftlens_skeleton_videos:/app/skeleton_videos
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     healthcheck:
@@ -90,5 +89,4 @@ services:
 
 volumes:
   liftlens_db_data:
-  liftlens_videos:
   liftlens_skeleton_videos:

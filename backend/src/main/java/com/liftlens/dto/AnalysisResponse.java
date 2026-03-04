@@ -13,7 +13,6 @@ public class AnalysisResponse {
     private String exerciseId;
     private String muscleGroup;
     private String overallScore;
-    private String videoPath;
     private String skeletonVideoPath;
     private LocalDateTime createdAt;
     private List<FeedbackItemResponse> feedbackItems;

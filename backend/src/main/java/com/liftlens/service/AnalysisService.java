@@ -7,9 +7,9 @@ import com.liftlens.model.Analysis;
 import com.liftlens.model.FeedbackItem;
 import com.liftlens.model.FeedbackStatus;
 import com.liftlens.model.OverallScore;
+import com.liftlens.model.User;
 import com.liftlens.repository.AnalysisRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -43,58 +44,81 @@ public class AnalysisService {
     private final AnalysisRepository analysisRepository;
     private final MlService mlService;
 
-    @Value("${app.video-storage-path}")
-    private String videoStoragePath;
-
-    public AnalysisResponse create(MultipartFile video, String exerciseId) throws IOException {
+    @Transactional
+    public AnalysisResponse create(MultipartFile video, String exerciseId, User user) throws IOException {
         String muscleGroup = EXERCISE_MUSCLE_GROUP.getOrDefault(exerciseId, "unknown");
 
-        String filename = UUID.randomUUID() + "_" + video.getOriginalFilename();
-        Path storedPath = Path.of(videoStoragePath, filename);
-        Files.createDirectories(storedPath.getParent());
-        Files.copy(video.getInputStream(), storedPath);
+        Path tempFile = Files.createTempFile(UUID.randomUUID().toString(), "_" + video.getOriginalFilename());
+        try {
+            Files.copy(video.getInputStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
+            MlAnalysisResponse mlResult = mlService.analyze(tempFile, exerciseId);
 
-        MlAnalysisResponse mlResult = mlService.analyze(storedPath, exerciseId);
+            // Camera angle error: return feedback without saving to the database
+            boolean hasCameraError = mlResult.getFeedback().stream()
+                    .anyMatch(f -> "camera_angle".equals(f.getAspect()));
+            if (hasCameraError) {
+                List<FeedbackItemResponse> cameraFeedback = mlResult.getFeedback().stream()
+                        .map(f -> new FeedbackItemResponse(null, f.getAspect(), f.getStatus(), f.getMessage()))
+                        .toList();
+                return new AnalysisResponse(null, exerciseId, muscleGroup,
+                        mlResult.getOverallScore(), null, java.time.LocalDateTime.now(), cameraFeedback);
+            }
 
-        Analysis analysis = Analysis.builder()
-                .exerciseId(exerciseId)
-                .muscleGroup(muscleGroup)
-                .overallScore(OverallScore.valueOf(mlResult.getOverallScore()))
-                .videoPath(storedPath.toString())
-                .skeletonVideoPath(mlResult.getSkeletonVideoPath())
-                .build();
+            Analysis analysis = Analysis.builder()
+                    .user(user)
+                    .exerciseId(exerciseId)
+                    .muscleGroup(muscleGroup)
+                    .overallScore(OverallScore.valueOf(mlResult.getOverallScore()))
+                    .skeletonVideoPath(mlResult.getSkeletonVideoPath())
+                    .build();
 
-        List<FeedbackItem> items = mlResult.getFeedback().stream()
-                .map(f -> FeedbackItem.builder()
-                        .analysis(analysis)
-                        .aspect(f.getAspect())
-                        .status(FeedbackStatus.valueOf(f.getStatus()))
-                        .message(f.getMessage())
-                        .build())
-                .toList();
+            List<FeedbackItem> items = mlResult.getFeedback().stream()
+                    .map(f -> FeedbackItem.builder()
+                            .analysis(analysis)
+                            .aspect(f.getAspect())
+                            .status(FeedbackStatus.valueOf(f.getStatus()))
+                            .message(f.getMessage())
+                            .build())
+                    .toList();
 
-        analysis.setFeedbackItems(items);
-        Analysis saved = analysisRepository.save(analysis);
-        return toResponse(saved);
+            analysis.setFeedbackItems(items);
+            Analysis saved = analysisRepository.save(analysis);
+            return toResponse(saved);
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
     }
 
     @Transactional(readOnly = true)
-    public List<AnalysisResponse> getAll() {
-        return analysisRepository.findAll().stream()
+    public List<AnalysisResponse> getByUser(User user) {
+        return analysisRepository.findByUserOrderByCreatedAtDesc(user).stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public AnalysisResponse getById(Long id) {
-        return analysisRepository.findById(id)
+    public AnalysisResponse getById(Long id, User user) {
+        return analysisRepository.findByIdAndUser(id, user)
                 .map(this::toResponse)
                 .orElseThrow(() -> new RuntimeException("Analysis not found: " + id));
     }
 
+    @Transactional
+    public void delete(Long id, User user) {
+        Analysis analysis = analysisRepository.findByIdAndUser(id, user)
+                .orElseThrow(() -> new RuntimeException("Analysis not found: " + id));
+        if (analysis.getSkeletonVideoPath() != null) {
+            try {
+                Files.deleteIfExists(Path.of(analysis.getSkeletonVideoPath()));
+            } catch (IOException ignored) {
+            }
+        }
+        analysisRepository.delete(analysis);
+    }
+
     @Transactional(readOnly = true)
-    public String getSkeletonVideoPath(Long id) {
-        return analysisRepository.findById(id)
+    public String getSkeletonVideoPath(Long id, User user) {
+        return analysisRepository.findByIdAndUser(id, user)
                 .map(Analysis::getSkeletonVideoPath)
                 .orElseThrow(() -> new RuntimeException("Analysis not found: " + id));
     }
@@ -111,7 +135,6 @@ public class AnalysisService {
                 a.getExerciseId(),
                 a.getMuscleGroup(),
                 a.getOverallScore().name(),
-                a.getVideoPath(),
                 a.getSkeletonVideoPath(),
                 a.getCreatedAt(),
                 feedback
