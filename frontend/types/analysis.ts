@@ -14,7 +14,6 @@ export interface Analysis {
   exerciseId: string;
   muscleGroup: string;
   overallScore: OverallScore;
-  videoPath: string | null;
   skeletonVideoPath: string | null;
   createdAt: string;
   feedbackItems: FeedbackItem[];
