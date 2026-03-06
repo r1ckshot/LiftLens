@@ -22,9 +22,15 @@ const STATUS_CONFIG: Record<
   },
 };
 
-export function FeedbackList({ items }: { items: FeedbackItem[] }) {
+export function FeedbackList({
+  items,
+  baseDelay = 0,
+}: {
+  items: FeedbackItem[];
+  baseDelay?: number;
+}) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {items.map((item, i) => {
         const config = STATUS_CONFIG[item.status as FeedbackStatus];
         const { Icon } = config;
@@ -33,7 +39,7 @@ export function FeedbackList({ items }: { items: FeedbackItem[] }) {
             key={item.id}
             className={`flex items-start gap-3 rounded-xl border px-4 py-3 animate-slide-up ${config.className}`}
             style={{
-              animationDelay: `${i * 0.12}s`,
+              animationDelay: `${baseDelay + i * 150}ms`,
               animationFillMode: "both",
             }}
           >

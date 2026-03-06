@@ -33,14 +33,33 @@ const CONFIG: Record<
   },
 };
 
-export function ScoreBadge({ score }: { score: OverallScore }) {
+export function ScoreBadge({
+  score,
+  compact = false,
+  delay = 0,
+}: {
+  score: OverallScore;
+  compact?: boolean;
+  delay?: number;
+}) {
   const { label, Icon, className, iconClass } = CONFIG[score];
+
+  if (compact) {
+    return (
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold ${className}`}>
+        <Icon className={`w-3.5 h-3.5 ${iconClass}`} />
+        {label}
+      </span>
+    );
+  }
+
   return (
     <div
-      className={`animate-score-reveal border-2 rounded-2xl p-8 text-center ${className}`}
+      className={`animate-score-reveal border-2 rounded-2xl px-6 py-6 text-center ${className}`}
+      style={{ animationDelay: `${delay}ms`, animationFillMode: "both" }}
     >
-      <Icon className={`w-16 h-16 mx-auto mb-4 ${iconClass}`} />
-      <div className="text-3xl font-bold tracking-wide">{label}</div>
+      <Icon className={`w-12 h-12 mx-auto mb-3 ${iconClass}`} />
+      <div className="text-xl font-bold tracking-wide">{label}</div>
     </div>
   );
 }

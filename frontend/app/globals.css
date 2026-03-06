@@ -7,10 +7,14 @@
   --foreground: #f0f0f0;
 }
 
+html {
+  font-size: 17px;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), system-ui, Arial, sans-serif;
 }
 
 @layer components {
@@ -22,5 +26,13 @@ body {
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
