@@ -365,7 +365,10 @@ class SkeletonRenderer:
                 ret, frame = cap.read()
                 if not ret:
                     break
-                if landmarks is not None:
+                # Skip frame 0: MediaPipe runs full detection (no prior) on the
+                # first frame, which is less accurate than tracking on frame 1+.
+                # Leaving frame 0 without overlay avoids a misaligned thumbnail.
+                if landmarks is not None and i > 0:
                     features = (
                         features_seq[i]
                         if features_seq is not None and i < len(features_seq)
