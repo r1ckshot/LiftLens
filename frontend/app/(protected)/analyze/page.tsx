@@ -42,8 +42,8 @@ export default function AnalyzePage() {
     uploadDoneRef.current = false;
     const interval = setInterval(() => {
       if (uploadDoneRef.current) {
-        // Processing phase: slow exponential approach towards 97%
-        setProgress((p) => (p < 97 ? Math.min(p + (97 - p) * 0.05 + Math.random() * 0.3, 97) : p));
+        // Steady slow increment — reaches 99% in ~70s so bar never stalls visually
+        setProgress((p) => Math.min(p + 0.3 + Math.random() * 0.15, 99));
       }
     }, 700);
     return () => clearInterval(interval);
@@ -51,13 +51,14 @@ export default function AnalyzePage() {
 
   const handleAnalyze = async (file: File, exerciseId: string) => {
     setLoading(true);
-    setProgress(0);
+    setProgress(1); // Start at 1% immediately so bar is never empty
     setError(null);
     setResult(null);
     try {
       const analysis = await analyzeVideo(file, exerciseId, (p) => {
-        setProgress(p);
-        // XHR reports 0-60 during upload; once it reaches 60, hand off to interval
+        // api.ts sends 0-60 for upload bytes, 100 when request completes.
+        // Map 0-60 → 1-55% so the bar starts smoothly from 1 instead of jumping.
+        if (p <= 60) setProgress(1 + (p / 60) * 54);
         if (p >= 60) uploadDoneRef.current = true;
       });
       setProgress(100);
