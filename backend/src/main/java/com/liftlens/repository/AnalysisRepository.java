@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface AnalysisRepository extends JpaRepository<Analysis, Long> {
     List<Analysis> findByUserOrderByCreatedAtDesc(User user);
     Optional<Analysis> findByIdAndUser(Long id, User user);
+    List<Analysis> findByUser(User user);
 }

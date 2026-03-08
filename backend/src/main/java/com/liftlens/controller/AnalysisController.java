@@ -54,6 +54,12 @@ public class AnalysisController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAll(@AuthenticationPrincipal User user) {
+        analysisService.deleteAll(user);
+        return ResponseEntity.noContent().build();
+    }
+
     /**
      * Streams the skeleton video with proper HTTP Range support.
      * Range requests are required by all browsers for HTML5 <video> seeking.

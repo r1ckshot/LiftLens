@@ -116,6 +116,17 @@ public class AnalysisService {
         analysisRepository.delete(analysis);
     }
 
+    @Transactional
+    public void deleteAll(User user) {
+        List<Analysis> analyses = analysisRepository.findByUser(user);
+        for (Analysis analysis : analyses) {
+            if (analysis.getSkeletonVideoPath() != null) {
+                try { Files.deleteIfExists(Path.of(analysis.getSkeletonVideoPath())); } catch (IOException ignored) {}
+            }
+        }
+        analysisRepository.deleteAll(analyses);
+    }
+
     @Transactional(readOnly = true)
     public String getSkeletonVideoPath(Long id, User user) {
         return analysisRepository.findByIdAndUser(id, user)
