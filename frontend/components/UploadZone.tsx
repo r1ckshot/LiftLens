@@ -150,7 +150,6 @@ export function UploadZone({ onAnalyze, loading }: Props) {
           Exercise
         </p>
 
-        {/* Group pills */}
         <div className="grid grid-cols-4 gap-2">
           {GROUPS.map((g) => (
             <button
@@ -168,7 +167,6 @@ export function UploadZone({ onAnalyze, loading }: Props) {
           ))}
         </div>
 
-        {/* Exercise list */}
         <div className="space-y-1">
           {EXERCISES_BY_GROUP[selectedGroup].map((ex) => (
             <button

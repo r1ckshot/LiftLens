@@ -91,7 +91,6 @@ export function ConstellationBg() {
           p.vy = (p.vy / s) * MIN_SPEED;
         }
 
-        // Move
         p.x += p.vx;
         p.y += p.vy;
 
