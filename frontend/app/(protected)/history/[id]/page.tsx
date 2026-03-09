@@ -216,6 +216,7 @@ export default function AnalysisDetailPage() {
                   controls
                   playsInline
                   className="flex-1 min-h-0 w-full rounded-xl bg-black"
+                  onLoadedMetadata={(e) => { e.currentTarget.currentTime = 0.04; }}
                 />
               </div>
             ) : (
