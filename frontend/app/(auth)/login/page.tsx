@@ -31,18 +31,20 @@ export default function LoginPage() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorKey, setErrorKey] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(false);
 
   const validate = (): boolean => {
     let valid = true;
     if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      setEmailError("Enter a valid email address.");
+      setEmailError("Invalid email");
       valid = false;
     } else {
       setEmailError(null);
     }
     if (password.length < 6) {
-      setPasswordError("Password must be at least 6 characters.");
+      setPasswordError("Min. 6 characters");
       valid = false;
     } else {
       setPasswordError(null);
@@ -61,6 +63,10 @@ export default function LoginPage() {
       router.push("/analyze");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed.");
+      setErrorKey((k) => k + 1);
+      setCooldown(true);
+      setTimeout(() => setCooldown(false), 1500);
+      setTimeout(() => setError(null), 2000);
     } finally {
       setLoading(false);
     }
@@ -83,12 +89,20 @@ export default function LoginPage() {
         </FadeIn>
 
         <FadeIn delay={100}>
-          <div className="glass-card p-8">
+          <div className="glass-card p-8 relative overflow-hidden">
+            {error && (
+              <div key={errorKey} className="absolute inset-0 z-10 flex items-center justify-center rounded-[inherit] backdrop-blur-sm bg-black/50 animate-error-overlay">
+                <p className="text-red-400 text-base font-medium px-8 text-center">{error}</p>
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               <div>
-                <label className="block text-white/50 text-xs font-medium uppercase tracking-widest mb-2">
-                  Email
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-white/50 text-xs font-medium uppercase tracking-widest">Email</label>
+                  <span className={`text-xs transition-opacity duration-200 ${emailError ? "text-red-400" : "opacity-0 pointer-events-none"}`}>
+                    {emailError ?? "·"}
+                  </span>
+                </div>
                 <input
                   type="email"
                   value={email}
@@ -99,13 +113,15 @@ export default function LoginPage() {
                   ].join(" ")}
                   placeholder="you@example.com"
                 />
-                {emailError && <p className="mt-1.5 text-red-400 text-xs">{emailError}</p>}
               </div>
 
               <div>
-                <label className="block text-white/50 text-xs font-medium uppercase tracking-widest mb-2">
-                  Password
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-white/50 text-xs font-medium uppercase tracking-widest">Password</label>
+                  <span className={`text-xs transition-opacity duration-200 ${passwordError ? "text-red-400" : "opacity-0 pointer-events-none"}`}>
+                    {passwordError ?? "·"}
+                  </span>
+                </div>
                 <input
                   type="password"
                   value={password}
@@ -116,18 +132,11 @@ export default function LoginPage() {
                   ].join(" ")}
                   placeholder="••••••••"
                 />
-                {passwordError && <p className="mt-1.5 text-red-400 text-xs">{passwordError}</p>}
               </div>
-
-              {error && (
-                <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400 text-sm">
-                  {error}
-                </div>
-              )}
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || cooldown}
                 className="w-full py-3.5 rounded-xl bg-green-500 hover:bg-green-400 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-black font-semibold transition-all duration-200 mt-2 shadow-lg shadow-green-500/15 hover:shadow-green-500/30"
               >
                 {loading ? "Signing in…" : "Sign in"}

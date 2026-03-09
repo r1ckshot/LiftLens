@@ -43,6 +43,12 @@ const config: Config = {
           "0%": { opacity: "1" },
           "100%": { opacity: "0" },
         },
+        "error-overlay": {
+          "0%":   { opacity: "0" },
+          "12%":  { opacity: "1" },
+          "75%":  { opacity: "1" },
+          "100%": { opacity: "0" },
+        },
         "slide-down-out": {
           "0%": { opacity: "1", transform: "translateY(0)" },
           "100%": { opacity: "0", transform: "translateY(12px)" },
@@ -55,6 +61,7 @@ const config: Config = {
         "fade-in": "fade-in 0.65s ease-out both",
         "fade-out": "fade-out 0.25s ease-in both",
         "slide-down-out": "slide-down-out 0.28s ease-in both",
+        "error-overlay": "error-overlay 2s ease-in-out both",
         "glow-pulse": "glow-pulse 2s ease-in-out infinite",
         "border-pulse": "border-pulse 2.5s ease-in-out infinite",
       },
