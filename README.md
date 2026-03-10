@@ -37,7 +37,7 @@
 - Problematic joints highlighted in orange/red
 - Video playable directly in the browser
 
-> I appear in the video below — because the best apps are the ones you'd actually want to use yourself.
+> I appear in the video below — the best apps are the ones you'd actually want to use yourself.
 
 <table>
   <td><img src="https://github.com/user-attachments/assets/226b6851-c915-417e-ba57-553ae916ba47" /></td>
