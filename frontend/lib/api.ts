@@ -51,7 +51,8 @@ export async function login(email: string, password: string): Promise<AuthRespon
 export function analyzeVideo(
   video: File,
   exerciseId: string,
-  onProgress?: (percent: number) => void
+  onProgress?: (percent: number) => void,
+  signal?: AbortSignal
 ): Promise<Analysis> {
   return new Promise((resolve, reject) => {
     const token = getToken();
@@ -60,6 +61,13 @@ export function analyzeVideo(
     formData.append("exercise_id", exerciseId);
 
     const xhr = new XMLHttpRequest();
+
+    if (signal) {
+      signal.addEventListener("abort", () => {
+        xhr.abort();
+        reject(new DOMException("Analysis cancelled", "AbortError"));
+      });
+    }
 
     // Upload phase: 0-60% of total progress
     xhr.upload.onprogress = (e) => {

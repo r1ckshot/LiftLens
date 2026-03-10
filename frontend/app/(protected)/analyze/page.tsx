@@ -34,8 +34,23 @@ export default function AnalyzePage() {
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<Analysis | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorExiting, setErrorExiting] = useState(false);
   // Tracks whether upload is done so the interval can simulate processing (60→97%)
   const uploadDoneRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Cancel in-flight XHR if the component unmounts during analysis
+  useEffect(() => {
+    return () => { abortControllerRef.current?.abort(); };
+  }, []);
+
+  // Warn before tab close/refresh while analysis is running
+  useEffect(() => {
+    if (!loading) return;
+    const prevent = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener("beforeunload", prevent);
+    return () => window.removeEventListener("beforeunload", prevent);
+  }, [loading]);
 
   useEffect(() => {
     if (!loading) return;
@@ -50,6 +65,7 @@ export default function AnalyzePage() {
   }, [loading]);
 
   const handleAnalyze = async (file: File, exerciseId: string) => {
+    abortControllerRef.current = new AbortController();
     setLoading(true);
     setProgress(1); // Start at 1% immediately so bar is never empty
     setError(null);
@@ -60,15 +76,24 @@ export default function AnalyzePage() {
         // Map 0-60 → 1-55% so the bar starts smoothly from 1 instead of jumping.
         if (p <= 60) setProgress(1 + (p / 60) * 54);
         if (p >= 60) uploadDoneRef.current = true;
-      });
+      }, abortControllerRef.current.signal);
       setProgress(100);
       await new Promise((r) => setTimeout(r, 350));
       setResult(analysis);
     } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return;
       setError(e instanceof Error ? e.message : "Analysis failed. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const dismissError = () => {
+    setErrorExiting(true);
+    setTimeout(() => {
+      setError(null);
+      setErrorExiting(false);
+    }, 250);
   };
 
   const reset = () => {
@@ -82,6 +107,9 @@ export default function AnalyzePage() {
       <div className="flex items-center justify-center h-[calc(100vh-72px)]">
         <div className="glass-card p-8 animate-fade-in w-full max-w-md mx-4">
           <LoadingOverlay progress={progress} />
+          <p className="text-white/40 text-sm text-center">
+            Please don&apos;t navigate away — analysis is in progress
+          </p>
         </div>
       </div>
     );
@@ -190,11 +218,21 @@ export default function AnalyzePage() {
 
   return (
     <div className="relative mx-auto max-w-lg px-4 py-4">
-      <div className="glass-card p-6 animate-fade-in">
+      <div className="glass-card p-6 animate-fade-in relative overflow-hidden">
         <UploadZone onAnalyze={handleAnalyze} loading={loading} />
         {error && (
-          <div className="mt-5 p-4 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400 text-sm">
-            {error}
+          <div
+            className={`absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[inherit] backdrop-blur-sm bg-black/50 ${errorExiting ? "animate-fade-out" : "animate-fade-in"}`}
+          >
+            <div className="bg-zinc-900/90 border border-white/10 rounded-2xl px-6 py-5 text-center max-w-[260px]">
+              <p className="text-red-400 text-sm font-medium">{error}</p>
+              <button
+                onClick={dismissError}
+                className="mt-4 px-5 py-2 text-sm text-white/50 border border-white/10 rounded-xl hover:border-white/30 hover:text-white/80 transition-all w-full"
+              >
+                Try again
+              </button>
+            </div>
           </div>
         )}
       </div>
